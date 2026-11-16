@@ -4,6 +4,7 @@
 """The task catalog: training and evaluation dataset declarations, keyed by name."""
 
 from experiments.post_training.task_curation.datasets import (
+    ai2_qasper_free_response,
     ai2_qasper_verifiable,
     campaign_releases,
     structure_closure,
@@ -76,6 +77,7 @@ def all_sources() -> dict[str, RlDataSource]:
         *arc.sources(),
         *reasoning_gym.sources(),
         *nemotron_ultra.sources(),
+        *ai2_qasper_free_response.sources(),
         *ai2_qasper_verifiable.sources(),
         *structure_closure.sources(),
         *campaign_releases.sources(),

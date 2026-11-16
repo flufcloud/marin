@@ -45,6 +45,12 @@ class CategoricalAnnotation(TypedDict):
     yes_no: bool | None
 
 
+class QasperAnnotation(CategoricalAnnotation):
+    extractive_spans: list[str]
+    free_form_answer: str
+    evidence: list[str]
+
+
 def uses_missing_evidence(evidence: Iterable[str]) -> bool:
     """Return whether an answer cites a figure or table unavailable in paper.json."""
     return any(item.startswith("FLOAT SELECTED:") for item in evidence)

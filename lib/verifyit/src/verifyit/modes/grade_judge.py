@@ -264,6 +264,15 @@ def grade_judge_candidate(
     policy = empty_output_policy(spec)
     if not isinstance(candidate, str):
         raise InvalidTask("judge candidate must be text")
+    if spec.answer_json_field:
+        try:
+            value = json.loads(candidate, object_pairs_hook=unique_object)
+        except (json.JSONDecodeError, ValueError):
+            return scored(0.0, reason="invalid_json")
+        answer = value.get(spec.answer_json_field) if isinstance(value, dict) else None
+        if not isinstance(answer, str):
+            return scored(0.0, reason="invalid_json_field")
+        candidate = answer
     candidate = _answer_text(candidate, spec.strip_candidate_reasoning_blocks, strip_outer=False)
     if policy is EmptyOutputPolicy.ZERO and not candidate.strip():
         return scored(0.0, reason="no_output")

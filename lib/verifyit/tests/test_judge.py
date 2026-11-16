@@ -170,6 +170,23 @@ def test_exact_gate_scores_one_without_calling_a_model(tmp_path, unconfigured_ju
     assert reward.detail == {"gate": "exact"}
 
 
+@pytest.mark.parametrize(
+    ("candidate", "reward", "reason"),
+    [
+        ('{"answer": "Paris"}', 1.0, None),
+        ('{"answer": 1}', 0.0, "invalid_json_field"),
+        ("not json", 0.0, "invalid_json"),
+    ],
+)
+def test_json_field_is_extracted_before_judging(unconfigured_judge, candidate, reward, reason):
+    result = grade_judge.grade_judge_candidate(
+        JudgeSpec(references=("Paris",), answer_json_field="answer"), candidate, runtime=None
+    )
+
+    assert result.reward == reward
+    assert result.detail.get("reason") == reason
+
+
 def test_gate_ignores_articles_and_trailing_punctuation(tmp_path, unconfigured_judge):
     reward = grade_judge.grade(JudgeSpec(references=("Paris",)), tmp_path, _workspace(tmp_path, "\\boxed{The Paris.}"))
     assert reward.reward == 1.0

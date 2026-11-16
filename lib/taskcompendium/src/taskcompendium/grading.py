@@ -44,6 +44,7 @@ from taskcompendium.models import (
     TextMessage,
     TextSubmission,
     VerifyitGrader,
+    verifyit_answer_file,
     verifyit_spec,
 )
 from taskcompendium.runtime.resources import resource_bytes
@@ -104,6 +105,13 @@ def answer_submission(task: TaskSpec, attempt: GradingAttempt) -> Submission:
         if attempt.state is None:
             raise SubmissionFailure("State submission requires captured state")
         return attempt.state
+    if task.answer_type == AnswerType.FILE and isinstance(task.grader, VerifyitGrader):
+        output = verifyit_answer_file(verifyit_spec(task.grader))
+        if output is None:
+            raise TypeError("A workspace verifier has no answer file")
+        if output not in attempt.files:
+            raise SubmissionFailure(f"File submission requires {output}")
+        return TextSubmission(attempt.files[output].decode(errors="replace"))
     raise TypeError(f"A {task.answer_type} answer is not extracted from the attempt")
 
 
@@ -184,7 +192,8 @@ def grade_remote_judge_answer(
     verifier = verifyit_spec(grader)
     if not isinstance(verifier, JudgeSpec):
         raise TypeError(f"Remote judge grading requires a judge verifier, not {grader.mode}")
-    require_submission_compatibility(task)
+    if task.answer_type in CONVERSATION_ANSWERS:
+        require_submission_compatibility(task)
     try:
         submission = answer_submission(task, attempt)
     except SubmissionFailure as error:

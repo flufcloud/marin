@@ -309,7 +309,8 @@ class JudgeSpec:
     gate that answers verbatim matches without a model call. Rubric ``checklist`` asks one yes/no
     question per entry of ``criteria`` and scores the fraction answered yes. ``context`` names a
     file under the tests directory (a conversation transcript, say) shown to the judge alongside the
-    answer. ``constraints`` are IFEval checks that must all pass before the judge is consulted.
+    answer. ``answer_json_field`` extracts one string field before grading. ``constraints`` are
+    IFEval checks that must all pass before the judge is consulted.
     """
 
     references: tuple[str, ...] = ()
@@ -324,6 +325,7 @@ class JudgeSpec:
     transport_attempts: int = field(default=1, kw_only=True)
     transport_budget: float = field(default=180.0, kw_only=True)
     output: str = DEFAULT_OUTPUT
+    answer_json_field: str = ""
     empty_output: EmptyOutputPolicy = field(default=EmptyOutputPolicy.ZERO, kw_only=True)
     system_prompt: str = ""
     prompt_template: str = ""

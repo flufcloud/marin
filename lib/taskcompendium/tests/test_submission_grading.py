@@ -296,6 +296,20 @@ def test_remote_judge_grades_blank_plain_text_when_its_policy_requires_it(judge_
     assert len(judge_server.requests) == 1
 
 
+def test_remote_judge_grades_file_submission_without_endpoint():
+    output = "/app/answer.json"
+    package = verifyit_package(
+        JudgeSpec(references=("reference",), output=output, answer_json_field="answer"),
+        environment=GRADING_ENVIRONMENT,
+    )
+    task = _task(package.grader, AnswerType.FILE).model_copy(update={"output_paths": (output,)})
+    attempt = GradingAttempt(_conversation(task, "Done."), files={output: b'{"answer":"reference"}'})
+
+    result = grade_remote_judge_answer(task, attempt, None)
+
+    assert (result.status, result.reward) == (Outcome.GRADED, 1.0)
+
+
 def test_remote_judge_provider_error_is_retryable_infrastructure_failure(judge_server):
     judge_server.status_code = 400
     package = verifyit_package(
